@@ -1,55 +1,42 @@
 import {View,Text,StyleSheet,TouchableOpacity,Image,TextInput, Alert} from "react-native"
 import {useRouter, useLocalSearchParams} from "expo-router"
+import { useSQLiteContext } from 'expo-sqlite';
 import {Ionicons} from "@expo/vector-icons"
 import {useState} from "react"
 
 type jobItem = {
-    id: number,
-    title : string
+  id: number,
+  title: string,
+  status: 'pending' | 'done'
 }
 
 export default function AddTaskScreen () {
+    const db = useSQLiteContext();
     const [newTask, setNewTask] = useState("");
     const router = useRouter();
     const { name, jobs } = useLocalSearchParams(); 
     
     const goBack = () => {
-        router.back();
+        router.replace({
+        pathname: "/",
+        });
     }
 
-    const handleFinish = () => {
-        if(newTask.trim().length > 0) {
-            
-            let jobsArray: jobItem[] = [];
-            if (typeof jobs === 'string') {
-                try {
-                    jobsArray = JSON.parse(jobs);
-                } catch (e) {
-                    Alert.alert("Lỗi", "Không thể tải dữ liệu công việc cũ.");
-                    router.back();
-                    return;
-                }
-            }
-
-            const newJobItem: jobItem = {
-                id: Date.now(),
-                title: newTask.trim()
-            };
-            const updatedJobsArray = [...jobsArray, newJobItem];
-
-            const updatedJobsString = JSON.stringify(updatedJobsArray);
-
-            router.replace({
-                pathname: "/listTask",
-                params: {
-                    name: name, // Giữ lại name
-                    newJobs: updatedJobsString // Gửi MẢNG jobs MỚI
-                }
-            });
+    const handleFinish = async () => {
+        if (newTask.trim().length > 0) {
+        await db.runAsync(
+            'INSERT INTO jobs (title, status) VALUES (?, ?);',
+            [newTask.trim(), 'pending']
+        );
+        router.replace({
+        pathname: "/listTask",
+        params: { name: name }
+        });
         } else {
             Alert.alert("Lỗi", "Vui lòng nhập tên công việc!");
         }
     }
+
 
     return (
         <View style={styles.container}>

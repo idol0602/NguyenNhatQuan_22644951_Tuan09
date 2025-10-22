@@ -18,7 +18,8 @@ export default function HomeScreen() {
         <Link href={{pathname: "/listTask", params:{
           name: name
         }}} asChild>
-          <TouchableOpacity style={styles.button}>GET STARTED
+          <TouchableOpacity style={styles.button}>
+            <Text>GET STARTED</Text>
             <Ionicons name="chevron-forward" size={24} color="white" />
           </TouchableOpacity>
         </Link>
